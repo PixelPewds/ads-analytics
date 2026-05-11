@@ -1,0 +1,3 @@
+    hasMany(Campaign::class);
+    }
+}
