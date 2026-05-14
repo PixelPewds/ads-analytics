@@ -1,0 +1,3 @@
+belongsTo(Report::class);
+    }
+}
