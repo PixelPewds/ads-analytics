@@ -1,4 +1,25 @@
-validate([
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
+use Illuminate\Support\Facades\Auth;
+
+class LoginController extends Controller
+{
+    public function showForm(): View|RedirectResponse
+    {
+        if (Auth::check()) {
+            return redirect()->route('dashboard');
+        }
+        return view('auth.login');
+    }
+
+    public function login(Request $request): RedirectResponse
+    {
+        $credentials = $request->validate([
             'email'    => ['required', 'email'],
             'password' => ['required'],
         ]);
@@ -8,7 +29,9 @@ validate([
             return redirect()->intended(route('dashboard'));
         }
 
-        return back()->withErrors(['email' => 'These credentials do not match our records.'])->onlyInput('email');
+        return back()
+            ->withErrors(['email' => 'These credentials do not match our records.'])
+            ->onlyInput('email');
     }
 
     public function logout(Request $request): RedirectResponse

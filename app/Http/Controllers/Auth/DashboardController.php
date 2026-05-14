@@ -1,4 +1,20 @@
-latest()->get();
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Report;
+use App\Models\Recommendation;
+use App\Services\AnalyticsService;
+use Illuminate\Http\Request;
+use Illuminate\View\View;
+
+class DashboardController extends Controller
+{
+    public function __construct(protected AnalyticsService $analytics) {}
+
+    public function index(Request $request): View
+    {
+        $reports       = Report::latest()->get();
         $activeReport  = null;
         $kpis          = [];
         $timeline      = [];
@@ -7,9 +23,10 @@ latest()->get();
         $adData        = [];
         $filters       = [];
         $activeFilters = [];
+        $recommendations = collect();
 
         if ($reports->isNotEmpty()) {
-            $reportId     = (int)$request->get('report_id', $reports->first()->id);
+            $reportId     = (int) $request->get('report_id', $reports->first()->id);
             $activeReport = $reports->firstWhere('id', $reportId) ?? $reports->first();
 
             $activeFilters = [
@@ -36,8 +53,6 @@ latest()->get();
             }
 
             $recommendations = $activeReport->recommendations()->get()->groupBy('type');
-        } else {
-            $recommendations = collect();
         }
 
         return view('dashboard.index', compact(

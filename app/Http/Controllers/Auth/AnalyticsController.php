@@ -1,4 +1,18 @@
-validate([
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Services\AnalyticsService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+
+class AnalyticsController extends Controller
+{
+    public function __construct(protected AnalyticsService $analytics) {}
+
+    public function chartData(Request $request): JsonResponse
+    {
+        $request->validate([
             'report_id'  => ['required', 'integer', 'exists:reports,id'],
             'date_start' => ['nullable', 'date'],
             'date_end'   => ['nullable', 'date'],

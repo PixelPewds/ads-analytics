@@ -1,4 +1,19 @@
-paginate(15);
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Report;
+use App\Services\RecommendationService;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
+
+class ReportController extends Controller
+{
+    public function __construct(protected RecommendationService $recommendationService) {}
+
+    public function index(): View
+    {
+        $reports = Report::latest()->paginate(15);
         return view('reports.index', compact('reports'))->with('title', 'Reports');
     }
 
@@ -10,7 +25,7 @@ paginate(15);
 
     public function regenerate(Report $report): RedirectResponse
     {
-        if (!$report->isProcessed()) {
+        if (! $report->isProcessed()) {
             return back()->with('error', 'Cannot generate recommendations for an unprocessed report.');
         }
 

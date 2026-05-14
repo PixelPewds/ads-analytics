@@ -1,4 +1,24 @@
-limit(10)->get();
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Http\Requests\UploadReportRequest;
+use App\Models\Report;
+use App\Services\RecommendationService;
+use App\Services\UploadService;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
+
+class UploadController extends Controller
+{
+    public function __construct(
+        protected UploadService $uploadService,
+        protected RecommendationService $recommendationService
+    ) {}
+
+    public function index(): View
+    {
+        $recentReports = Report::latest()->limit(10)->get();
         return view('upload.index', compact('recentReports'))->with('title', 'Upload Report');
     }
 
@@ -7,7 +27,6 @@ limit(10)->get();
         try {
             $report = $this->uploadService->handle($request->file('report'));
 
-            // Generate AI recommendations (gracefully degrades without API key)
             $previousReport = Report::where('status', 'processed')
                 ->where('id', '!=', $report->id)
                 ->latest()
@@ -17,7 +36,7 @@ limit(10)->get();
 
             return redirect()
                 ->route('dashboard', ['report_id' => $report->id])
-                ->with('success', "Report "{$report->original_filename}" uploaded successfully with {$report->row_count} rows.");
+                ->with('success', "Report \"{$report->original_filename}\" uploaded successfully with {$report->row_count} rows.");
         } catch (\RuntimeException $e) {
             return back()->with('error', $e->getMessage())->withInput();
         } catch (\Throwable $e) {

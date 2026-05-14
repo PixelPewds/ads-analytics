@@ -1,4 +1,28 @@
-'date',
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
+class Report extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'filename',
+        'original_filename',
+        'file_hash',
+        'date_range_start',
+        'date_range_end',
+        'status',
+        'row_count',
+        'error_message',
+    ];
+
+    protected $casts = [
+        'date_range_start' => 'date',
         'date_range_end'   => 'date',
     ];
 
@@ -25,7 +49,9 @@
     public function getDateRangeLabelAttribute(): string
     {
         if ($this->date_range_start && $this->date_range_end) {
-            return $this->date_range_start->format('M d') . ' – ' . $this->date_range_end->format('M d, Y');
+            return $this->date_range_start->format('M d')
+                . ' – '
+                . $this->date_range_end->format('M d, Y');
         }
         return 'Date range unavailable';
     }

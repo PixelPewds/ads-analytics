@@ -1,23 +1,16 @@
-@props([
-    'title'    => '',
-    'subtitle' => null,
-    'height'   => '280',
-    'id'       => 'chart',
-])
+@props(['title' => '', 'subtitle' => ''])
 
-<div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-    <div class="flex items-start justify-between mb-4 gap-3">
+<div class="chart-card">
+    @if($title)
+    <div class="flex items-center justify-between mb-4">
         <div>
-            <h3 class="text-sm font-semibold text-[#2F5061] font-[Barlow]">{{ $title }}</h3>
+            <h3 class="text-base font-bold text-[#264653]" style="font-family:'Barlow',sans-serif">{{ $title }}</h3>
             @if($subtitle)
-                <p class="text-xs text-gray-400 mt-0.5">{{ $subtitle }}</p>
+                <p class="text-xs text-[#6B7C8D] mt-0.5">{{ $subtitle }}</p>
             @endif
         </div>
-        @if(isset($actions))
-            <div class="shrink-0">{{ $actions }}</div>
-        @endif
+        {{ $actions ?? '' }}
     </div>
-    <div style="height: {{ $height }}px; position: relative;">
-        <canvas id="{{ $id }}"></canvas>
-    </div>
+    @endif
+    {{ $slot }}
 </div>
