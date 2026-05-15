@@ -3,42 +3,40 @@
 namespace App\Http\Controllers;
 
 use App\Models\Report;
-use App\Models\ChatHistory;
 use App\Services\ChatService;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class ChatController extends Controller
 {
-    public function __construct(
-        private readonly ChatService $chat
-    ) {}
+    public function __construct(protected ChatService $chatService) {}
 
     /**
      * Show the chat interface.
      */
     public function index(Request $request): View
     {
-        // Allow pre-selecting a report context via query param
-        $reportId = $request->query('report_id');
-
-        $report = $reportId
-            ? Report::where('status', 'processed')->find($reportId)
-            : Report::where('status', 'processed')->latest()->first();
-
-        $allReports = Report::where('status', 'processed')
+        // Fetch all processed reports for the dropdown
+        $reports = Report::where('status', 'processed')
             ->orderByDesc('created_at')
             ->get(['id', 'original_filename', 'date_range_start', 'date_range_end']);
 
+        // Pre-select a report via query param, or default to latest
+        $reportId = $request->query('report_id')
+            ?? $reports->first()?->id;
+
         // Establish or restore a session for this user
-        $sessionId = $this->resolveSessionId($request);
+        $sessionId = $request->session()->get('chat_session_id', (string) Str::uuid());
+        $request->session()->put('chat_session_id', $sessionId);
 
         // Load existing history for this session
-        $history = $this->chat->getHistory($sessionId);
+        $history = $this->chatService->getHistory($sessionId);
 
-        return view('chat.index', compact('report', 'allReports', 'history', 'sessionId'));
+        return view('chat.index', compact('reports', 'reportId', 'sessionId', 'history'))
+            ->with('title', 'AI Assistant');
     }
 
     /**
@@ -47,16 +45,21 @@ class ChatController extends Controller
     public function message(Request $request): JsonResponse
     {
         $request->validate([
-            'message'   => ['required', 'string', 'max:2000'],
-            'report_id' => ['nullable', 'integer', 'exists:reports,id'],
+            'message'    => ['required', 'string', 'max:2000'],
+            'session_id' => ['required', 'string'],
+            'report_id'  => ['nullable', 'integer', 'exists:reports,id'],
         ]);
 
-        $sessionId = $this->resolveSessionId($request);
         $message   = trim($request->input('message'));
+        $sessionId = $request->input('session_id');
         $reportId  = $request->input('report_id');
 
         try {
-            $reply = $this->chat->respond($message, $sessionId, $reportId ? (int)$reportId : null);
+            $reply = $this->chatService->respond(
+                $message,
+                $sessionId,
+                $reportId ? (int) $reportId : null
+            );
 
             return response()->json([
                 'success' => true,
@@ -76,29 +79,19 @@ class ChatController extends Controller
     /**
      * Clear chat history for the current session.
      */
-    public function clearHistory(Request $request): RedirectResponse|JsonResponse
+    public function clearHistory(Request $request): JsonResponse|RedirectResponse
     {
-        $sessionId = $this->resolveSessionId($request);
-        $this->chat->clearSession($sessionId);
+        $sessionId = $request->input('session_id')
+            ?? $request->session()->get('chat_session_id');
+
+        if ($sessionId) {
+            $this->chatService->clearSession($sessionId);
+        }
 
         if ($request->expectsJson()) {
             return response()->json(['success' => true]);
         }
 
         return back()->with('success', 'Chat history cleared.');
-    }
-
-    /**
-     * Resolve (or create) the chat session ID stored in the PHP session.
-     */
-    private function resolveSessionId(Request $request): string
-    {
-        $key = 'chat_session_id';
-
-        if (! $request->session()->has($key)) {
-            $request->session()->put($key, \Str::uuid()->toString());
-        }
-
-        return $request->session()->get($key);
     }
 }
