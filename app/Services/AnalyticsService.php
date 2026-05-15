@@ -1,4 +1,18 @@
-buildQuery($reportId, $filters);
+<?php
+
+namespace App\Services;
+
+use App\Models\Metric;
+use App\Models\Report;
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
+
+class AnalyticsService
+{
+    public function getKpis(int $reportId, array $filters = []): array
+    {
+        $query = $this->buildQuery($reportId, $filters);
+    buildQuery($reportId, $filters);
 
         $totals = (clone $query)
             ->selectRaw('
@@ -212,3 +226,4 @@ buildQuery($reportId, $filters);
         return $query;
     }
 }
+
