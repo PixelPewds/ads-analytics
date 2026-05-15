@@ -1,0 +1,1271 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ads Analytics — Laravel Blade Preview</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6,
+        .font-barlow {
+            font-family: 'Barlow', sans-serif;
+        }
+
+        .sidebar {
+            background: #0F1C28;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 14px;
+            border-radius: 10px;
+            font-size: .8125rem;
+            font-weight: 500;
+            color: #7A9BB5;
+            transition: background .15s, color .15s;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .nav-link:hover {
+            background: #1C2E3E;
+            color: #E0EAF4;
+        }
+
+        .nav-link.active {
+            background: #1C2E3E;
+            color: #fff;
+        }
+
+        .nav-link.active svg {
+            color: #2A9D8F;
+        }
+
+        .chart-card {
+            background: #fff;
+            border: 1px solid #DDE8F0;
+            border-radius: 16px;
+            padding: 20px 22px;
+            box-shadow: 0 1px 4px rgba(15, 28, 40, .06);
+        }
+
+        .kpi-card {
+            background: #fff;
+            border: 1px solid #DDE8F0;
+            border-radius: 14px;
+            padding: 18px 20px;
+            box-shadow: 0 1px 3px rgba(15, 28, 40, .05);
+        }
+
+        .btn-coral {
+            background: #E76F51;
+            color: #fff;
+            font-weight: 600;
+            border-radius: 10px;
+            padding: 9px 18px;
+            font-size: .8125rem;
+            transition: background .15s, transform .1s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-coral:hover {
+            background: #d05e40;
+        }
+
+        .btn-teal {
+            background: #2A9D8F;
+            color: #fff;
+            font-weight: 600;
+            border-radius: 10px;
+            padding: 9px 18px;
+            font-size: .8125rem;
+            transition: background .15s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-teal:hover {
+            background: #238a7e;
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: #4A6A82;
+            font-weight: 500;
+            border-radius: 10px;
+            padding: 8px 14px;
+            font-size: .8125rem;
+            border: 1px solid #D0DCE8;
+            cursor: pointer;
+            transition: background .15s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-ghost:hover {
+            background: #F0F6FA;
+        }
+
+        .form-input {
+            background: #F7FAFB;
+            border: 1px solid #D0DCE8;
+            border-radius: 9px;
+            padding: 9px 12px;
+            font-size: .8125rem;
+            color: #1A2E3E;
+            width: 100%;
+            transition: border-color .15s, box-shadow .15s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #2A9D8F;
+            box-shadow: 0 0 0 3px rgba(42, 157, 143, .12);
+        }
+
+        .drop-zone {
+            border: 2px dashed #C0D4E4;
+            border-radius: 14px;
+            background: #F7FAFB;
+            transition: border-color .2s, background .2s;
+        }
+
+        .drop-zone:hover,
+        .drop-zone.drag-over {
+            border-color: #2A9D8F;
+            background: #EBF7F5;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th {
+            font-size: .7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            color: #6B8DA6;
+            padding: 10px 12px;
+            border-bottom: 1px solid #E8EEF4;
+            text-align: left;
+        }
+
+        .data-table td {
+            font-size: .8125rem;
+            color: #1A2E3E;
+            padding: 10px 12px;
+            border-bottom: 1px solid #F0F5F9;
+        }
+
+        .data-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .data-table tr:hover td {
+            background: #F8FBFD;
+        }
+
+        .badge-teal {
+            background: #DFFAF6;
+            color: #1A7A70;
+            border-radius: 20px;
+            padding: 2px 9px;
+            font-size: .7rem;
+            font-weight: 600;
+        }
+
+        .badge-coral {
+            background: #FDECEA;
+            color: #C0422A;
+            border-radius: 20px;
+            padding: 2px 9px;
+            font-size: .7rem;
+            font-weight: 600;
+        }
+
+        .badge-amber {
+            background: #FEF3C7;
+            color: #92400E;
+            border-radius: 20px;
+            padding: 2px 9px;
+            font-size: .7rem;
+            font-weight: 600;
+        }
+
+        ::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #F0F5F9;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #C0D4E4;
+            border-radius: 99px;
+        }
+
+        .flash-success {
+            background: #E6F9F5;
+            color: #166B60;
+            border: 1px solid #A8E8DD;
+        }
+
+        .flash-error {
+            background: #FEF1EE;
+            color: #9B3722;
+            border: 1px solid #F5C3B5;
+        }
+
+        .flash-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 11px 16px;
+            border-radius: 10px;
+            font-size: .8125rem;
+            font-weight: 500;
+            margin-bottom: 18px;
+        }
+
+        [x-cloak] {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body class="h-full bg-[#EEF3F8]" x-data="{
+          sidebarOpen: false,
+          page: 'dashboard',
+          tab: 'campaigns',
+          chartMetric: 'spend',
+          chatInput: '',
+          chatMessages: [],
+          chatLoading: false,
+          dragging: false,
+          fileName: '',
+          fileSize: '',
+          uploading: false,
+      }">
+
+    <div class="flex h-full min-h-screen">
+
+        <!-- ─── SIDEBAR ──────────────────────────────────────────── -->
+        <aside
+            class="sidebar fixed inset-y-0 left-0 z-30 w-60 flex flex-col lg:static lg:translate-x-0 transition-transform duration-200"
+            :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'">
+
+            <!-- Logo -->
+            <div class="flex items-center gap-2.5 px-5 py-5 border-b border-white/10">
+                <div
+                    class="w-8 h-8 rounded-xl bg-gradient-to-br from-[#2A9D8F] to-[#1A7A70] flex items-center justify-center flex-shrink-0">
+                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                </div>
+                <div>
+                    <div class="text-sm font-bold text-white font-barlow leading-tight">Ads Analytics</div>
+                    <div class="text-[10px] text-[#4A7A99] font-medium">Meta Ads Intelligence</div>
+                </div>
+            </div>
+
+            <!-- Nav -->
+            <nav class="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+                <div class="text-[10px] font-bold text-[#3A5A72] uppercase tracking-widest px-3 mb-2">Main</div>
+
+                <button @click="page='dashboard'; sidebarOpen=false" :class="page==='dashboard' ? 'active' : ''"
+                    class="nav-link w-full text-left">
+                    <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75"
+                            d="M4 5a1 1 0 011-1h4a1 1 0 011 1v5a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm10 0a1 1 0 011-1h4a1 1 0 011 1v2a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zm10-4a1 1 0 011-1h4a1 1 0 011 1v8a1 1 0 01-1 1h-4a1 1 0 01-1-1v-8z" />
+                    </svg>
+                    Dashboard
+                </button>
+
+                <button @click="page='upload'; sidebarOpen=false" :class="page==='upload' ? 'active' : ''"
+                    class="nav-link w-full text-left">
+                    <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75"
+                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                    </svg>
+                    Upload Report
+                </button>
+
+                <button @click="page='reports'; sidebarOpen=false" :class="page==='reports' ? 'active' : ''"
+                    class="nav-link w-full text-left">
+                    <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75"
+                            d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Reports
+                </button>
+
+                <button @click="page='chat'; sidebarOpen=false" :class="page==='chat' ? 'active' : ''"
+                    class="nav-link w-full text-left">
+                    <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75"
+                            d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                    </svg>
+                    AI Assistant
+                </button>
+            </nav>
+
+            <!-- User -->
+            <div class="border-t border-white/10 px-3 py-4">
+                <div class="flex items-center gap-3 px-2">
+                    <div
+                        class="w-8 h-8 rounded-full bg-gradient-to-br from-[#2A9D8F] to-[#E76F51] flex items-center justify-center">
+                        <span class="text-xs font-bold text-white">A</span>
+                    </div>
+                    <div class="min-w-0">
+                        <div class="text-xs font-semibold text-white truncate">Admin User</div>
+                        <div class="text-[10px] text-[#4A7A99] truncate">admin@adsanalytics.test</div>
+                    </div>
+                </div>
+                <button class="nav-link w-full text-left mt-2 hover:!text-[#FF6B6B]">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75"
+                            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                    Sign Out
+                </button>
+            </div>
+        </aside>
+
+        <!-- ─── MAIN ─────────────────────────────────────────────── -->
+        <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+
+            <!-- Top bar -->
+            <header
+                class="h-14 bg-white border-b border-[#DDE8F0] flex items-center px-5 gap-4 flex-shrink-0 shadow-sm">
+                <button class="lg:hidden text-[#4A6A82]" @click="sidebarOpen=!sidebarOpen">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+                <div class="flex-1">
+                    <h1 class="text-base font-bold text-[#0F1C28] font-barlow"
+                        x-text="page === 'dashboard' ? 'Dashboard' : page === 'upload' ? 'Upload Report' : page === 'reports' ? 'Reports' : 'AI Assistant'">
+                    </h1>
+                </div>
+                <button @click="page='upload'" class="btn-coral text-xs px-3 py-2 hidden sm:inline-flex">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                    </svg>
+                    Upload
+                </button>
+            </header>
+
+            <!-- Content -->
+            <main class="flex-1 overflow-y-auto p-5 lg:p-7">
+
+                <!-- ═══════════════════════════════ DASHBOARD PAGE ═══════════════════════════════ -->
+                <div x-show="page === 'dashboard'">
+
+                    <!-- Filters bar -->
+                    <div class="flex flex-wrap items-center gap-3 mb-6">
+                        <div class="flex items-center gap-2">
+                            <label
+                                class="text-xs font-semibold text-[#4A6A82] uppercase tracking-wide whitespace-nowrap">Report</label>
+                            <select class="form-input !w-auto text-sm">
+                                <option>meta-ads-may-2025.csv (May 2025)</option>
+                                <option>meta-ads-april-2025.csv (Apr 2025)</option>
+                            </select>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <label class="text-xs font-semibold text-[#4A6A82] uppercase tracking-wide">From</label>
+                            <input type="date" value="2025-05-01" class="form-input !w-auto text-sm">
+                            <label class="text-xs font-semibold text-[#4A6A82] uppercase tracking-wide">To</label>
+                            <input type="date" value="2025-05-31" class="form-input !w-auto text-sm">
+                        </div>
+                        <select class="form-input !w-auto text-sm">
+                            <option>All Campaigns</option>
+                            <option>Brand Awareness Q2</option>
+                            <option>Retargeting Summer</option>
+                        </select>
+                        <button class="btn-teal text-xs">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z" />
+                            </svg>
+                            Apply
+                        </button>
+                    </div>
+
+                    <!-- Flash success example -->
+                    <div class="flash-bar flash-success" x-data="{ show: true }" x-show="show"
+                        x-init="setTimeout(() => show=false, 3500)" x-transition>
+                        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Report "meta-ads-may-2025.csv" uploaded successfully with 2,847 rows.
+                    </div>
+
+                    <!-- KPI Grid -->
+                    <div class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3 mb-4">
+                        <!-- Spend -->
+                        <div class="kpi-card">
+                            <div class="flex items-center gap-2 mb-2.5">
+                                <div class="w-8 h-8 rounded-lg flex items-center justify-center"
+                                    style="background:#FEF0EC">
+                                    <svg class="w-4 h-4" fill="none" stroke="#E76F51" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75"
+                                            d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </div>
+                                <span class="text-xs font-semibold text-[#6B7C8D] uppercase tracking-wide">Total
+                                    Spend</span>
+                            </div>
+                            <div class="text-xl font-bold font-barlow text-[#0F1C28]">$14,823.50</div>
+                            <div class="flex items-center gap-1 mt-1.5">
+                                <span class="text-xs font-semibold text-[#1A7A70]">▲ 12.4%</span>
+                                <span class="text-[10px] text-[#8AABBF]">vs prev.</span>
+                            </div>
+                        </div>
+                        <!-- Impressions -->
+                        <div class="kpi-card">
+                            <div class="flex items-center gap-2 mb-2.5">
+                                <div class="w-8 h-8 rounded-lg flex items-center justify-center"
+                                    style="background:#E6F7F5">
+                                    <svg class="w-4 h-4" fill="none" stroke="#2A9D8F" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75"
+                                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                </div>
+                                <span
+                                    class="text-xs font-semibold text-[#6B7C8D] uppercase tracking-wide">Impressions</span>
+                            </div>
+                            <div class="text-xl font-bold font-barlow text-[#0F1C28]">1.24M</div>
+                            <div class="flex items-center gap-1 mt-1.5">
+                                <span class="text-xs font-semibold text-[#1A7A70]">▲ 8.1%</span>
+                                <span class="text-[10px] text-[#8AABBF]">vs prev.</span>
+                            </div>
+                        </div>
+                        <!-- Clicks -->
+                        <div class="kpi-card">
+                            <div class="flex items-center gap-2 mb-2.5">
+                                <div class="w-8 h-8 rounded-lg flex items-center justify-center"
+                                    style="background:#E8EEF4">
+                                    <svg class="w-4 h-4" fill="none" stroke="#264653" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75"
+                                            d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
+                                    </svg>
+                                </div>
+                                <span class="text-xs font-semibold text-[#6B7C8D] uppercase tracking-wide">Clicks</span>
+                            </div>
+                            <div class="text-xl font-bold font-barlow text-[#0F1C28]">28,491</div>
+                            <div class="flex items-center gap-1 mt-1.5">
+                                <span class="text-xs font-semibold text-[#C0422A]">▼ 3.2%</span>
+                                <span class="text-[10px] text-[#8AABBF]">vs prev.</span>
+                            </div>
+                        </div>
+                        <!-- CTR -->
+                        <div class="kpi-card">
+                            <div class="flex items-center gap-2 mb-2.5">
+                                <div class="w-8 h-8 rounded-lg flex items-center justify-center"
+                                    style="background:#E6F7F5">
+                                    <svg class="w-4 h-4" fill="none" stroke="#2A9D8F" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75"
+                                            d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                                    </svg>
+                                </div>
+                                <span class="text-xs font-semibold text-[#6B7C8D] uppercase tracking-wide">CTR</span>
+                            </div>
+                            <div class="text-xl font-bold font-barlow text-[#0F1C28]">2.296%</div>
+                        </div>
+                        <!-- CPC -->
+                        <div class="kpi-card">
+                            <div class="flex items-center gap-2 mb-2.5">
+                                <div class="w-8 h-8 rounded-lg flex items-center justify-center"
+                                    style="background:#FEF0EC">
+                                    <svg class="w-4 h-4" fill="none" stroke="#E76F51" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75"
+                                            d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z" />
+                                    </svg>
+                                </div>
+                                <span class="text-xs font-semibold text-[#6B7C8D] uppercase tracking-wide">CPC</span>
+                            </div>
+                            <div class="text-xl font-bold font-barlow text-[#0F1C28]">$0.52</div>
+                        </div>
+                        <!-- ROAS -->
+                        <div class="kpi-card">
+                            <div class="flex items-center gap-2 mb-2.5">
+                                <div class="w-8 h-8 rounded-lg flex items-center justify-center"
+                                    style="background:#E8EEF4">
+                                    <svg class="w-4 h-4" fill="none" stroke="#264653" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75"
+                                            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                    </svg>
+                                </div>
+                                <span class="text-xs font-semibold text-[#6B7C8D] uppercase tracking-wide">ROAS</span>
+                            </div>
+                            <div class="text-xl font-bold font-barlow text-[#0F1C28]">3.8×</div>
+                        </div>
+                    </div>
+
+                    <!-- Secondary KPIs -->
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+                        <div class="kpi-card">
+                            <p class="text-xs font-semibold text-[#6B7C8D] uppercase tracking-wide mb-1.5">Conversions
+                            </p>
+                            <p class="text-lg font-bold font-barlow text-[#0F1C28]">847.0</p>
+                        </div>
+                        <div class="kpi-card">
+                            <p class="text-xs font-semibold text-[#6B7C8D] uppercase tracking-wide mb-1.5">CAC</p>
+                            <p class="text-lg font-bold font-barlow text-[#0F1C28]">$17.50</p>
+                        </div>
+                        <div class="kpi-card">
+                            <p class="text-xs font-semibold text-[#6B7C8D] uppercase tracking-wide mb-1.5">Conversations
+                            </p>
+                            <p class="text-lg font-bold font-barlow text-[#0F1C28]">312</p>
+                        </div>
+                        <div class="kpi-card">
+                            <p class="text-xs font-semibold text-[#6B7C8D] uppercase tracking-wide mb-1.5">Cost / Conv.
+                            </p>
+                            <p class="text-lg font-bold font-barlow text-[#0F1C28]">$47.51</p>
+                        </div>
+                    </div>
+
+                    <!-- Charts row -->
+                    <div class="grid grid-cols-1 xl:grid-cols-3 gap-4 mb-6">
+                        <!-- Timeline Chart -->
+                        <div class="chart-card xl:col-span-2" x-data="timelineChartData()" x-init="init()">
+                            <div class="flex items-center justify-between mb-4">
+                                <div>
+                                    <h3 class="font-barlow text-sm font-bold text-[#264653]">Performance Timeline</h3>
+                                    <p class="text-xs text-[#8AABBF] mt-0.5">Daily spend & conversions</p>
+                                </div>
+                                <div class="flex gap-1.5">
+                                    <button @click="setMetric('spend')"
+                                        :class="metric==='spend' ? 'bg-[#2A9D8F] text-white' : 'bg-[#F0F5F9] text-[#4A6A82]'"
+                                        class="text-xs px-2.5 py-1 rounded-lg font-medium transition-colors">Spend</button>
+                                    <button @click="setMetric('ctr')"
+                                        :class="metric==='ctr' ? 'bg-[#2A9D8F] text-white' : 'bg-[#F0F5F9] text-[#4A6A82]'"
+                                        class="text-xs px-2.5 py-1 rounded-lg font-medium transition-colors">CTR</button>
+                                    <button @click="setMetric('conv')"
+                                        :class="metric==='conv' ? 'bg-[#2A9D8F] text-white' : 'bg-[#F0F5F9] text-[#4A6A82]'"
+                                        class="text-xs px-2.5 py-1 rounded-lg font-medium transition-colors">Conv.</button>
+                                </div>
+                            </div>
+                            <div class="relative h-52">
+                                <canvas id="timelineChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Donut Chart -->
+                        <div class="chart-card" x-data="donutChartData()" x-init="init()">
+                            <div class="mb-4">
+                                <h3 class="font-barlow text-sm font-bold text-[#264653]">Spend by Campaign</h3>
+                                <p class="text-xs text-[#8AABBF] mt-0.5">Top 5 campaigns</p>
+                            </div>
+                            <div class="relative h-40 mb-3">
+                                <canvas id="donutChart"></canvas>
+                            </div>
+                            <div class="space-y-1.5">
+                                <template x-for="(item, i) in items" :key="i">
+                                    <div class="flex items-center gap-2 text-xs">
+                                        <span class="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                                            :style="`background:${colors[i]}`"></span>
+                                        <span class="text-[#4A6A82] truncate flex-1" x-text="item.name"></span>
+                                        <span class="font-semibold text-[#264653] ml-auto"
+                                            x-text="'$'+item.spend.toLocaleString()"></span>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Breakdown Table -->
+                    <div class="chart-card mb-6" x-data="{ tab: 'campaigns' }">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-barlow text-sm font-bold text-[#264653]">Performance Breakdown</h3>
+                            <div class="flex gap-1">
+                                <button @click="tab='campaigns'"
+                                    :class="tab==='campaigns' ? 'bg-[#0F1C28] text-white' : 'bg-[#F0F5F9] text-[#4A6A82]'"
+                                    class="text-xs px-3 py-1.5 rounded-lg font-medium transition-colors">Campaigns</button>
+                                <button @click="tab='adsets'"
+                                    :class="tab==='adsets' ? 'bg-[#0F1C28] text-white' : 'bg-[#F0F5F9] text-[#4A6A82]'"
+                                    class="text-xs px-3 py-1.5 rounded-lg font-medium transition-colors">Ad
+                                    Sets</button>
+                                <button @click="tab='ads'"
+                                    :class="tab==='ads' ? 'bg-[#0F1C28] text-white' : 'bg-[#F0F5F9] text-[#4A6A82]'"
+                                    class="text-xs px-3 py-1.5 rounded-lg font-medium transition-colors">Ads</button>
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th
+                                            x-text="tab === 'campaigns' ? 'Campaign' : tab === 'adsets' ? 'Ad Set' : 'Ad'">
+                                        </th>
+                                        <th class="text-right">Spend</th>
+                                        <th class="text-right">Impr.</th>
+                                        <th class="text-right">Clicks</th>
+                                        <th class="text-right">CTR</th>
+                                        <th class="text-right">CPC</th>
+                                        <th class="text-right">Conv.</th>
+                                        <th class="text-right">ROAS</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tableBody">
+                                    <tr>
+                                        <td class="font-medium">Brand Awareness Q2</td>
+                                        <td class="text-right font-semibold">$6,241.20</td>
+                                        <td class="text-right text-[#6B7C8D]">512,340</td>
+                                        <td class="text-right text-[#6B7C8D]">12,847</td>
+                                        <td class="text-right">2.509%</td>
+                                        <td class="text-right">$0.49</td>
+                                        <td class="text-right">412.0</td>
+                                        <td class="text-right"><span class="badge-teal">4.2×</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-medium">Retargeting — Summer Sale</td>
+                                        <td class="text-right font-semibold">$4,182.00</td>
+                                        <td class="text-right text-[#6B7C8D]">328,910</td>
+                                        <td class="text-right text-[#6B7C8D]">8,741</td>
+                                        <td class="text-right">2.657%</td>
+                                        <td class="text-right">$0.48</td>
+                                        <td class="text-right">291.0</td>
+                                        <td class="text-right"><span class="badge-teal">3.9×</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-medium">Lookalike — Top Customers</td>
+                                        <td class="text-right font-semibold">$2,840.50</td>
+                                        <td class="text-right text-[#6B7C8D]">241,780</td>
+                                        <td class="text-right text-[#6B7C8D]">5,109</td>
+                                        <td class="text-right">2.113%</td>
+                                        <td class="text-right">$0.56</td>
+                                        <td class="text-right">98.0</td>
+                                        <td class="text-right"><span class="badge-amber">1.8×</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-medium">Cold Audience — Interests</td>
+                                        <td class="text-right font-semibold">$1,559.80</td>
+                                        <td class="text-right text-[#6B7C8D]">158,220</td>
+                                        <td class="text-right text-[#6B7C8D]">1,794</td>
+                                        <td class="text-right">1.134%</td>
+                                        <td class="text-right">$0.87</td>
+                                        <td class="text-right">46.0</td>
+                                        <td class="text-right"><span class="badge-coral">0.7×</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- AI Recommendations -->
+                    <div class="chart-card mb-6">
+                        <div class="flex items-center gap-2 mb-4">
+                            <div
+                                class="w-7 h-7 rounded-lg bg-gradient-to-br from-[#2A9D8F] to-[#1A7A70] flex items-center justify-center">
+                                <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                                </svg>
+                            </div>
+                            <h3 class="font-barlow text-sm font-bold text-[#264653]">AI Recommendations</h3>
+                        </div>
+                        <div class="space-y-3">
+                            <!-- Scale up -->
+                            <div class="flex items-start gap-3 p-3.5 rounded-xl border"
+                                style="background:#E6F7F5;border-color:#A8E8DD">
+                                <div class="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
+                                    style="background:#1A7A7022">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="#1A7A70" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <div class="flex items-center gap-2 mb-0.5">
+                                        <span class="text-xs font-bold uppercase tracking-wide text-[#1A7A70]">Scale
+                                            Up</span>
+                                        <span class="text-xs text-[#6B7C8D]">· Brand Awareness Q2</span>
+                                    </div>
+                                    <p class="text-xs text-[#264653] leading-relaxed">ROAS of 4.2× exceeds target.
+                                        Consider increasing daily budget by 20–30% to capture additional high-intent
+                                        audiences while performance remains strong.</p>
+                                </div>
+                            </div>
+                            <!-- Pause -->
+                            <div class="flex items-start gap-3 p-3.5 rounded-xl border"
+                                style="background:#FEF3C7;border-color:#FDE68A">
+                                <div class="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
+                                    style="background:#92400E22">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="#92400E" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <div class="flex items-center gap-2 mb-0.5">
+                                        <span
+                                            class="text-xs font-bold uppercase tracking-wide text-[#92400E]">Pause</span>
+                                        <span class="text-xs text-[#6B7C8D]">· Cold Audience — Interests</span>
+                                    </div>
+                                    <p class="text-xs text-[#264653] leading-relaxed">ROAS of 0.7× is below the 1.0×
+                                        break-even threshold. Pause this campaign and reallocate budget to
+                                        higher-performing audiences.</p>
+                                </div>
+                            </div>
+                            <!-- Creative refresh -->
+                            <div class="flex items-start gap-3 p-3.5 rounded-xl border"
+                                style="background:#EEF2FF;border-color:#C7D2FE">
+                                <div class="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
+                                    style="background:#3730A322">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="#3730A3" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <div class="flex items-center gap-2 mb-0.5">
+                                        <span
+                                            class="text-xs font-bold uppercase tracking-wide text-[#3730A3]">Creative</span>
+                                        <span class="text-xs text-[#6B7C8D]">· Lookalike — Top Customers</span>
+                                    </div>
+                                    <p class="text-xs text-[#264653] leading-relaxed">CTR dropped 18% week-over-week
+                                        suggesting creative fatigue. Test 2–3 new ad variations with different hooks and
+                                        visual formats.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-4 pt-3 border-t border-[#E8EEF4]">
+                            <button @click="page='chat'" class="btn-ghost text-xs">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                                </svg>
+                                Ask the AI Assistant for more insights
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ═══════════════════════════════ UPLOAD PAGE ═══════════════════════════════ -->
+                <div x-show="page === 'upload'" x-data="{
+                dragging: false,
+                fileName: '',
+                fileSize: '',
+                uploading: false,
+                handleFile(files) {
+                    if (!files.length) return;
+                    this.fileName = files[0].name;
+                    this.fileSize = (files[0].size/1024/1024).toFixed(2)+' MB';
+                }
+            }">
+                    <div class="max-w-2xl mx-auto">
+                        <div class="mb-6">
+                            <h2 class="text-2xl font-extrabold text-[#264653] font-barlow">Upload Report</h2>
+                            <p class="text-sm text-[#6B7C8D] mt-1">Upload a Meta Ads CSV or Excel export. AI
+                                recommendations are generated automatically.</p>
+                        </div>
+
+                        <div class="chart-card mb-6">
+                            <!-- Drop zone -->
+                            <div class="drop-zone flex flex-col items-center justify-center py-14 px-6 text-center cursor-pointer mb-5"
+                                :class="{ 'drag-over': dragging }" @dragover.prevent="dragging=true"
+                                @dragleave="dragging=false"
+                                @drop.prevent="dragging=false; handleFile($event.dataTransfer.files)"
+                                @click="$el.querySelector('input').click()">
+                                <input type="file" accept=".csv,.xlsx,.xls" class="sr-only"
+                                    @change="handleFile($event.target.files)">
+                                <div class="w-14 h-14 rounded-2xl flex items-center justify-center mb-3 transition-colors"
+                                    :class="fileName ? 'bg-[#E6F7F5]' : 'bg-[#E8EEF4]'">
+                                    <svg class="w-7 h-7 transition-colors"
+                                        :class="fileName ? 'text-[#2A9D8F]' : 'text-[#8AABBF]'" fill="none"
+                                        stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75"
+                                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                                    </svg>
+                                </div>
+                                <p class="text-sm font-semibold text-[#264653] mb-1"
+                                    x-text="fileName || 'Drop your file here or click to browse'"></p>
+                                <p class="text-xs text-[#6B7C8D]" x-text="fileSize || 'CSV · XLSX · XLS — max 20 MB'">
+                                </p>
+                            </div>
+                            <button class="btn-coral w-full py-3 text-sm flex items-center justify-center gap-2"
+                                :disabled="!fileName" :class="!fileName ? 'opacity-50 cursor-not-allowed' : ''"
+                                @click="if(fileName) { uploading=true; setTimeout(()=>{ uploading=false; page='dashboard'; }, 1500) }">
+                                <template x-if="!uploading">
+                                    <span class="flex items-center gap-2">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                        </svg>
+                                        Upload &amp; Analyse
+                                    </span>
+                                </template>
+                                <template x-if="uploading">
+                                    <span class="flex items-center gap-2">
+                                        <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                                stroke-width="4" />
+                                            <path class="opacity-75" fill="currentColor"
+                                                d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                                        </svg>
+                                        Processing…
+                                    </span>
+                                </template>
+                            </button>
+                        </div>
+
+                        <div class="chart-card mb-6">
+                            <h3 class="text-sm font-bold text-[#264653] mb-3 font-barlow">Expected CSV Columns</h3>
+                            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                                <template
+                                    x-for="col in ['Day / Date','Campaign Name','Ad Set Name','Ad Name','Amount Spent','Impressions','Reach','Link Clicks','CTR','CPC','Results (Conversions)','Cost per Result','Revenue','ROAS','Conversations Started']">
+                                    <div class="flex items-center gap-1.5 text-xs text-[#6B7C8D]">
+                                        <svg class="w-3.5 h-3.5 text-[#2A9D8F] flex-shrink-0" fill="none"
+                                            stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M9 12l2 2 4-4" />
+                                        </svg>
+                                        <span x-text="col"></span>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+
+                        <div class="chart-card">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-sm font-bold text-[#264653] font-barlow">Recent Uploads</h3>
+                                <button @click="page='reports'"
+                                    class="text-xs text-[#2A9D8F] hover:underline font-medium">View all →</button>
+                            </div>
+                            <div class="space-y-1">
+                                <template x-for="r in [
+                                {name:'meta-ads-may-2025.csv',range:'May 1–31 2025',rows:2847,status:'processed',ago:'2 hours ago'},
+                                {name:'meta-ads-april-2025.csv',range:'Apr 1–30 2025',rows:2401,status:'processed',ago:'5 days ago'},
+                                {name:'meta-ads-march-2025.csv',range:'Mar 1–31 2025',rows:1982,status:'processed',ago:'34 days ago'},
+                            ]">
+                                    <div
+                                        class="flex items-center justify-between py-2.5 border-b border-[#F0F5F9] last:border-0">
+                                        <div class="flex items-center gap-2.5 min-w-0 flex-1">
+                                            <div
+                                                class="w-7 h-7 rounded-lg bg-[#E8EEF4] flex items-center justify-center flex-shrink-0">
+                                                <svg class="w-3.5 h-3.5 text-[#4A6A82]" fill="none"
+                                                    stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                </svg>
+                                            </div>
+                                            <div class="min-w-0">
+                                                <p class="text-sm font-medium text-[#264653] truncate" x-text="r.name">
+                                                </p>
+                                                <p class="text-xs text-[#6B7C8D]"><span x-text="r.range"></span> · <span
+                                                        x-text="r.rows.toLocaleString()"></span> rows · <span
+                                                        x-text="r.ago"></span></p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center gap-2 flex-shrink-0 ml-3">
+                                            <span class="badge-teal" x-text="r.status"></span>
+                                            <button @click="page='dashboard'"
+                                                class="text-xs text-[#2A9D8F] hover:underline font-semibold">View
+                                                →</button>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ═══════════════════════════════ REPORTS PAGE ═══════════════════════════════ -->
+                <div x-show="page === 'reports'" x-data="{ confirmIdx: null }">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <h2 class="text-2xl font-extrabold text-[#264653] font-barlow">Reports</h2>
+                            <p class="text-sm text-[#6B7C8D] mt-0.5">All uploaded Meta Ads reports</p>
+                        </div>
+                        <button @click="page='upload'" class="btn-coral">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 4v16m8-8H4" />
+                            </svg>
+                            New Upload
+                        </button>
+                    </div>
+                    <div class="chart-card">
+                        <div class="overflow-x-auto">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>File Name</th>
+                                        <th>Date Range</th>
+                                        <th class="text-right">Rows</th>
+                                        <th>Status</th>
+                                        <th>Uploaded</th>
+                                        <th class="text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template x-for="(r, idx) in [
+                                    {name:'meta-ads-may-2025.csv',range:'May 1–31 2025',rows:2847,status:'processed',ago:'2 hours ago'},
+                                    {name:'meta-ads-april-2025.csv',range:'Apr 1–30 2025',rows:2401,status:'processed',ago:'5 days ago'},
+                                    {name:'meta-ads-march-2025.csv',range:'Mar 1–31 2025',rows:1982,status:'processed',ago:'34 days ago'},
+                                    {name:'meta-ads-feb-2025.csv',range:'Feb 1–28 2025',rows:1644,status:'failed',ago:'62 days ago'},
+                                    {name:'meta-ads-jan-2025.xlsx',range:'Jan 1–31 2025',rows:2103,status:'processed',ago:'91 days ago'},
+                                ]">
+                                        <tr>
+                                            <td>
+                                                <div class="flex items-center gap-2.5">
+                                                    <div
+                                                        class="w-8 h-8 rounded-lg bg-[#E8EEF4] flex items-center justify-center flex-shrink-0">
+                                                        <svg class="w-4 h-4 text-[#4A6A82]" fill="none"
+                                                            stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                stroke-width="1.75"
+                                                                d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                        </svg>
+                                                    </div>
+                                                    <span class="font-semibold text-[#264653] text-sm"
+                                                        x-text="r.name"></span>
+                                                </div>
+                                            </td>
+                                            <td class="text-[#6B7C8D] text-sm" x-text="r.range"></td>
+                                            <td class="text-right font-medium text-sm" x-text="r.rows.toLocaleString()">
+                                            </td>
+                                            <td>
+                                                <span
+                                                    :class="r.status==='processed' ? 'badge-teal' : r.status==='failed' ? 'badge-coral' : 'badge-amber'"
+                                                    class="inline-flex items-center gap-1 text-xs px-2.5 py-0.5 rounded-full font-semibold">
+                                                    <span class="w-1.5 h-1.5 rounded-full"
+                                                        :class="r.status==='processed' ? 'bg-[#1A7A70]' : r.status==='failed' ? 'bg-[#C0422A]' : 'bg-[#92400E] animate-pulse'"></span>
+                                                    <span
+                                                        x-text="r.status.charAt(0).toUpperCase()+r.status.slice(1)"></span>
+                                                </span>
+                                            </td>
+                                            <td class="text-[#6B7C8D] text-sm" x-text="r.ago"></td>
+                                            <td class="text-right">
+                                                <div class="flex items-center justify-end gap-2">
+                                                    <button x-show="r.status==='processed'" @click="page='dashboard'"
+                                                        class="btn-ghost !py-1.5 !px-3 text-xs">
+                                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor"
+                                                            viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                stroke-width="2"
+                                                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                        </svg>
+                                                        View
+                                                    </button>
+                                                    <button class="btn-ghost !py-1.5 !px-3 text-xs"
+                                                        title="Regenerate AI">
+                                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor"
+                                                            viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                stroke-width="2"
+                                                                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                                        </svg>
+                                                    </button>
+                                                    <button @click="confirmIdx=idx"
+                                                        class="btn-ghost !py-1.5 !px-3 text-xs !text-[#C0422A] !border-[#F5C3B5] hover:!bg-[#FEF1EE]">
+                                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor"
+                                                            viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                stroke-width="2"
+                                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                        </svg>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Delete confirm modal -->
+                    <div x-show="confirmIdx !== null"
+                        class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" x-transition>
+                        <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm">
+                            <h4 class="font-barlow font-bold text-[#264653] text-base mb-2">Delete Report?</h4>
+                            <p class="text-sm text-[#6B7C8D] mb-5">This report and all its data will be permanently
+                                deleted.</p>
+                            <div class="flex gap-2">
+                                <button @click="confirmIdx=null"
+                                    class="flex-1 py-2 rounded-lg bg-[#E76F51] text-white text-sm font-semibold hover:bg-[#d05e40]">
+                                    Yes, Delete
+                                </button>
+                                <button @click="confirmIdx=null"
+                                    class="flex-1 py-2 rounded-lg border border-[#D0DCE8] text-sm font-medium text-[#4A6A82] hover:bg-[#F0F5F9]">
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ═══════════════════════════════ CHAT PAGE ═══════════════════════════════ -->
+                <div x-show="page === 'chat'" class="max-w-3xl mx-auto flex flex-col" style="height: calc(100vh - 7rem)"
+                    x-data="chatPage()" x-init="init()">
+
+                    <div class="flex items-center justify-between mb-4 flex-shrink-0">
+                        <div>
+                            <h2 class="text-xl font-extrabold text-[#264653] font-barlow">AI Assistant</h2>
+                            <p class="text-xs text-[#6B7C8D] mt-0.5">Ask anything about your Meta Ads performance.</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <select class="form-input !w-auto text-sm">
+                                <option>meta-ads-may-2025.csv</option>
+                                <option>meta-ads-april-2025.csv</option>
+                            </select>
+                            <button @click="messages=[]" class="btn-ghost text-xs">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                                Clear
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Messages -->
+                    <div class="chart-card flex-1 overflow-y-auto mb-3 min-h-0" id="chatPanel">
+                        <div x-show="messages.length === 0"
+                            class="flex flex-col items-center justify-center h-full py-10 text-center">
+                            <div
+                                class="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#2A9D8F] to-[#1A7A70] flex items-center justify-center mx-auto mb-4">
+                                <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                                </svg>
+                            </div>
+                            <h3 class="font-barlow font-bold text-[#264653] text-lg mb-1">Hi! I'm your Meta Ads AI
+                                assistant.</h3>
+                            <p class="text-sm text-[#6B7C8D] max-w-sm leading-relaxed">Select a report above and ask me
+                                anything about campaign performance, budget, or creative strategy.</p>
+                            <div class="grid grid-cols-2 gap-2 mt-5 w-full max-w-sm">
+                                <button @click="quickSend('What campaign has the best ROAS?')"
+                                    class="text-left text-xs p-3 rounded-xl border border-[#DDE8F0] bg-[#F7FAFB] hover:bg-[#EEF3F8] text-[#4A6A82] transition-colors">What
+                                    campaign has the best ROAS?</button>
+                                <button @click="quickSend('Which ads should I pause?')"
+                                    class="text-left text-xs p-3 rounded-xl border border-[#DDE8F0] bg-[#F7FAFB] hover:bg-[#EEF3F8] text-[#4A6A82] transition-colors">Which
+                                    ads should I pause?</button>
+                                <button @click="quickSend('How can I lower my CPC?')"
+                                    class="text-left text-xs p-3 rounded-xl border border-[#DDE8F0] bg-[#F7FAFB] hover:bg-[#EEF3F8] text-[#4A6A82] transition-colors">How
+                                    can I lower my CPC?</button>
+                                <button @click="quickSend('Summarise this report')"
+                                    class="text-left text-xs p-3 rounded-xl border border-[#DDE8F0] bg-[#F7FAFB] hover:bg-[#EEF3F8] text-[#4A6A82] transition-colors">Summarise
+                                    this report</button>
+                            </div>
+                        </div>
+
+                        <template x-for="(m, i) in messages" :key="i">
+                            <div>
+                                <div x-show="m.role==='user'" class="flex justify-end mb-3">
+                                    <div class="max-w-[75%] bg-[#0F1C28] text-white text-sm rounded-2xl rounded-tr-sm px-4 py-2.5 leading-relaxed"
+                                        x-text="m.content"></div>
+                                </div>
+                                <div x-show="m.role==='assistant'" class="flex items-start gap-2.5 mb-3">
+                                    <div
+                                        class="w-7 h-7 rounded-full bg-gradient-to-br from-[#2A9D8F] to-[#1A7A70] flex items-center justify-center flex-shrink-0 mt-0.5">
+                                        <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M9.663 17h4.673M12 3v1" />
+                                        </svg>
+                                    </div>
+                                    <div class="max-w-[75%] bg-[#F0F6FA] text-[#1A2E3E] text-sm rounded-2xl rounded-tl-sm px-4 py-2.5 leading-relaxed"
+                                        x-html="m.html"></div>
+                                </div>
+                            </div>
+                        </template>
+
+                        <div x-show="loading" class="flex items-center gap-2.5 mb-3">
+                            <div
+                                class="w-7 h-7 rounded-full bg-gradient-to-br from-[#2A9D8F] to-[#1A7A70] flex items-center justify-center flex-shrink-0">
+                                <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9.663 17h4.673" />
+                                </svg>
+                            </div>
+                            <div class="bg-[#F0F6FA] rounded-2xl rounded-tl-sm px-4 py-3">
+                                <div class="flex gap-1.5 items-center">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-[#2A9D8F] animate-bounce"
+                                        style="animation-delay:0ms"></span>
+                                    <span class="w-1.5 h-1.5 rounded-full bg-[#2A9D8F] animate-bounce"
+                                        style="animation-delay:150ms"></span>
+                                    <span class="w-1.5 h-1.5 rounded-full bg-[#2A9D8F] animate-bounce"
+                                        style="animation-delay:300ms"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Input -->
+                    <div class="chart-card flex-shrink-0">
+                        <div class="flex gap-2">
+                            <input type="text" x-model="input" placeholder="Ask about your campaigns…"
+                                class="form-input flex-1" @keydown.enter.prevent="send()" :disabled="loading">
+                            <button class="btn-teal flex-shrink-0 px-4" @click="send()"
+                                :disabled="loading || !input.trim()"
+                                :class="(!input.trim() || loading) ? 'opacity-50 cursor-not-allowed' : ''">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                                </svg>
+                                <span class="hidden sm:inline">Send</span>
+                            </button>
+                        </div>
+                        <p class="text-[10px] text-[#AABFCC] mt-2">AI responses are generated based on your report data.
+                            Always verify recommendations before making budget decisions.</p>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <script>
+        // ── Timeline chart ───────────────────────────────────────────
+        function timelineChartData() {
+            const labels = ['May 1', 'May 3', 'May 5', 'May 7', 'May 9', 'May 11', 'May 13', 'May 15', 'May 17', 'May 19', 'May 21', 'May 23', 'May 25', 'May 27', 'May 29', 'May 31'];
+            const datasets = {
+                spend: { data: [420, 380, 510, 495, 602, 588, 471, 530, 612, 645, 598, 710, 680, 720, 694, 755], label: 'Spend ($)', color: '#2A9D8F', bg: 'rgba(42,157,143,0.12)' },
+                ctr: { data: [2.1, 2.3, 2.0, 2.4, 2.6, 2.5, 2.2, 2.4, 2.7, 2.8, 2.5, 2.9, 2.7, 3.0, 2.8, 3.1], label: 'CTR (%)', color: '#E76F51', bg: 'rgba(231,111,81,0.12)' },
+                conv: { data: [18, 22, 19, 25, 28, 30, 24, 27, 32, 35, 29, 38, 34, 40, 37, 43], label: 'Conversions', color: '#264653', bg: 'rgba(38,70,83,0.10)' },
+            };
+            return {
+                chart: null,
+                metric: 'spend',
+                init() {
+                    const ctx = document.getElementById('timelineChart');
+                    if (!ctx) return;
+                    const ds = datasets.spend;
+                    this.chart = new Chart(ctx, {
+                        type: 'line',
+                        data: { labels, datasets: [{ label: ds.label, data: ds.data, borderColor: ds.color, backgroundColor: ds.bg, borderWidth: 2, fill: true, tension: 0.35, pointRadius: 3, pointHoverRadius: 5 }] },
+                        options: {
+                            responsive: true, maintainAspectRatio: false,
+                            plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } },
+                            scales: {
+                                x: { grid: { color: '#F0F5F9' }, ticks: { font: { size: 10 }, color: '#8AABBF' } },
+                                y: { grid: { color: '#F0F5F9' }, ticks: { font: { size: 10 }, color: '#8AABBF' } },
+                            }
+                        }
+                    });
+                },
+                setMetric(m) {
+                    this.metric = m;
+                    if (!this.chart) return;
+                    const ds = datasets[m];
+                    this.chart.data.datasets[0] = { label: ds.label, data: ds.data, borderColor: ds.color, backgroundColor: ds.bg, borderWidth: 2, fill: true, tension: 0.35, pointRadius: 3, pointHoverRadius: 5 };
+                    this.chart.update();
+                }
+            };
+        }
+
+        // ── Donut chart ──────────────────────────────────────────────
+        function donutChartData() {
+            const items = [
+                { name: 'Brand Awareness Q2', spend: 6241 },
+                { name: 'Retargeting — Summer', spend: 4182 },
+                { name: 'Lookalike Customers', spend: 2840 },
+                { name: 'Cold — Interests', spend: 1560 },
+            ];
+            const colors = ['#2A9D8F', '#E76F51', '#264653', '#F4A261'];
+            return {
+                items, colors,
+                init() {
+                    const ctx = document.getElementById('donutChart');
+                    if (!ctx) return;
+                    new Chart(ctx, {
+                        type: 'doughnut',
+                        data: { labels: items.map(i => i.name), datasets: [{ data: items.map(i => i.spend), backgroundColor: colors, borderWidth: 2, borderColor: '#fff', hoverOffset: 6 }] },
+                        options: {
+                            responsive: true, maintainAspectRatio: false, cutout: '70%',
+                            plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => ' $' + c.parsed.toLocaleString() } } }
+                        }
+                    });
+                }
+            };
+        }
+
+        // ── Chat (mock for preview) ──────────────────────────────────
+        const mockReplies = {
+            'what campaign has the best roas?': '**Brand Awareness Q2** has the highest ROAS at **4.2×**, well above the account average of 3.8×. This campaign is driving strong returns — consider scaling the budget by 20–30% to capture additional high-intent traffic.',
+            'which ads should i pause?': 'Based on your report data, I recommend **pausing the Cold Audience — Interests** campaign immediately. Its ROAS of 0.7× is below break-even and it\'s consuming $1,559 per month with poor returns.\n\nAlso review **Lookalike — Top Customers** which is showing a declining CTR week-over-week, suggesting creative fatigue.',
+            'how can i lower my cpc?': 'To reduce your CPC from the current $0.52:\n\n1. **Narrow audience targeting** — tighter interests tend to yield better relevance scores\n2. **Improve ad relevance** — test new creatives to boost CTR, which directly lowers CPC\n3. **Use Advantage+ placements** — Meta\'s algorithm finds the cheapest conversions\n4. **Schedule ads** — run ads during peak engagement windows for your audience',
+            'summarise this report': '**May 2025 Summary**\n\nTotal spend of **$14,823** generated **$56,329** in revenue at a **3.8× ROAS**. Impressions reached **1.24M** with an average CTR of **2.3%**.\n\n✅ Brand Awareness Q2 is your top performer (4.2× ROAS)\n⚠️ Lookalike campaign showing creative fatigue\n❌ Cold Audience campaign is below break-even and should be paused',
+        };
+
+        function chatPage() {
+            return {
+                messages: [],
+                input: '',
+                loading: false,
+                init() { },
+                async send() {
+                    const text = this.input.trim();
+                    if (!text || this.loading) return;
+                    this.messages.push({ role: 'user', content: text });
+                    this.input = '';
+                    this.loading = true;
+                    this.scrollBottom();
+                    await new Promise(r => setTimeout(r, 900 + Math.random() * 600));
+                    const key = text.toLowerCase().replace(/[?!.,]/g, '').trim();
+                    let reply = mockReplies[key] || `Great question! Based on your May 2025 report data, here's my analysis:\n\n"${text}"\n\nI'm analysing your campaign metrics across spend, CTR, ROAS, and conversion data. For deeper analysis, connect your OpenAI API key in the Laravel .env configuration.`;
+                    this.messages.push({ role: 'assistant', content: reply, html: this.format(reply) });
+                    this.loading = false;
+                    this.$nextTick(() => this.scrollBottom());
+                },
+                quickSend(t) { this.input = t; this.send(); },
+                format(t) {
+                    return t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                        .replace(/\*(.+?)\*/g, '<em>$1</em>')
+                        .replace(/✅/g, '<span class="text-[#1A7A70]">✅</span>')
+                        .replace(/⚠️/g, '<span class="text-[#92400E]">⚠️</span>')
+                        .replace(/❌/g, '<span class="text-[#C0422A]">❌</span>')
+                        .replace(/\n/g, '<br>');
+                },
+                scrollBottom() {
+                    const el = document.getElementById('chatPanel');
+                    if (el) el.scrollTop = el.scrollHeight;
+                }
+            };
+        }
+    </script>
+</body>
+
+</html>
