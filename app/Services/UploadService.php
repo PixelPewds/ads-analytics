@@ -1,4 +1,22 @@
-['day', 'date', 'reporting_starts', 'reporting_start', 'report_starts'],
+<?php
+
+namespace App\Services;
+
+use App\Imports\MetaAdsImport;
+use App\Models\Metric;
+use App\Models\Report;
+use Carbon\Carbon;
+use Illuminate\Http\UploadedFile;
+use Maatwebsite\Excel\Facades\Excel;
+
+class UploadService
+{
+    /**
+     * Column mapping: internal field name => list of possible CSV/XLSX header names
+     * (after normalization to lowercase_with_underscores)
+     */
+    private const COLUMN_MAP = [
+        'date'                  => ['day', 'date', 'reporting_starts', 'reporting_start', 'report_starts'],
         'campaign_id'           => ['campaign_id'],
         'campaign_name'         => ['campaign_name'],
         'adset_id'              => ['ad_set_id', 'adset_id'],
@@ -19,6 +37,9 @@
         'cost_per_conversation' => ['cost_per_messaging_conversation_started', 'cost_per_new_messaging_conversation'],
     ];
 
+    /**
+     * Handle the uploaded file: store it, parse it, persist metrics.
+     */
     public function handle(UploadedFile $file): Report
     {
         $hash = md5_file($file->getRealPath());
@@ -27,7 +48,11 @@
             throw new \RuntimeException('This report has already been uploaded.');
         }
 
-        $path = $file->storeAs('reports', $hash . '_' . time() . '.' . $file->getClientOriginalExtension(), 'local');
+        $path = $file->storeAs(
+            'reports',
+            $hash . '_' . time() . '.' . $file->getClientOriginalExtension(),
+            'local'
+        );
 
         $report = Report::create([
             'filename'          => $path,
@@ -38,9 +63,9 @@
 
         try {
             $ext  = strtolower($file->getClientOriginalExtension());
-            $rows = $ext === 'csv'
-                ? $this->parseCsv($file->getRealPath())
-                : $this->parseXlsx($file->getRealPath());
+            $rows = in_array($ext, ['xlsx', 'xls'])
+                ? $this->parseXlsx($file->getRealPath())
+                : $this->parseCsv($file->getRealPath());
 
             if (empty($rows)) {
                 throw new \RuntimeException('No data rows found in the uploaded file.');
@@ -59,6 +84,7 @@
                 'date_range_start' => $dates?->min_date,
                 'date_range_end'   => $dates?->max_date,
             ]);
+
         } catch (\Throwable $e) {
             $report->update(['status' => 'failed', 'error_message' => $e->getMessage()]);
             throw $e;
@@ -67,10 +93,13 @@
         return $report;
     }
 
+    /**
+     * Parse a CSV file into an array of associative rows.
+     */
     private function parseCsv(string $path): array
     {
         $handle = fopen($path, 'r');
-        if (!$handle) {
+        if (! $handle) {
             throw new \RuntimeException('Cannot open CSV file.');
         }
 
@@ -91,6 +120,9 @@
         return $rows;
     }
 
+    /**
+     * Parse an XLSX/XLS file using Maatwebsite Excel.
+     */
     private function parseXlsx(string $path): array
     {
         $import = new MetaAdsImport();
@@ -98,6 +130,9 @@
         return $import->getData();
     }
 
+    /**
+     * Batch-insert metric rows for a report.
+     */
     private function storeMetrics(Report $report, array $rows): void
     {
         $chunks = array_chunk($rows, 500);
@@ -114,12 +149,15 @@
                 $mapped['updated_at'] = now();
                 $insert[] = $mapped;
             }
-            if (!empty($insert)) {
+            if (! empty($insert)) {
                 Metric::insert($insert);
             }
         }
     }
 
+    /**
+     * Map a raw CSV/XLSX row to the internal metric field names.
+     */
     private function mapRow(array $row): array
     {
         $mapped = [];
@@ -133,16 +171,16 @@
                 } catch (\Throwable) {
                     $value = null;
                 }
-            } elseif (in_array($field, ['spend','ctr','cpc','conversions','cost_per_conversion','revenue','roas','conversations','cost_per_conversation'], true)) {
+            } elseif (in_array($field, ['spend', 'ctr', 'cpc', 'conversions', 'cost_per_conversion', 'revenue', 'roas', 'conversations', 'cost_per_conversation'], true)) {
                 $value = $this->cleanNumeric($value);
-            } elseif (in_array($field, ['impressions','reach','clicks'], true)) {
+            } elseif (in_array($field, ['impressions', 'reach', 'clicks'], true)) {
                 $value = (int) $this->cleanNumeric($value);
             }
 
             $mapped[$field] = $value;
         }
 
-        // Skip rows where both spend and impressions are empty
+        // Skip rows where both spend and impressions are empty / zero
         if (empty($mapped['spend']) && empty($mapped['impressions'])) {
             return [];
         }
@@ -150,6 +188,9 @@
         return $mapped;
     }
 
+    /**
+     * Find the first matching field from a list of candidate header names.
+     */
     private function findField(array $row, array $candidates): mixed
     {
         foreach ($candidates as $key) {
@@ -160,6 +201,9 @@
         return null;
     }
 
+    /**
+     * Normalize a CSV/XLSX header to lowercase_with_underscores.
+     */
     private function normalizeHeader(string $header): string
     {
         $header = strtolower(trim($header));
@@ -167,10 +211,15 @@
         return trim($header, '_');
     }
 
+    /**
+     * Clean a value to a float (strip currency symbols, commas, etc.).
+     */
     private function cleanNumeric(mixed $value): float
     {
-        if ($value === null || $value === '') return 0;
-        $clean = preg_replace('/[^0-9.\-]/', '', (string)$value);
-        return (float)$clean;
+        if ($value === null || $value === '') {
+            return 0.0;
+        }
+        $clean = preg_replace('/[^0-9.\-]/', '', (string) $value);
+        return (float) $clean;
     }
 }

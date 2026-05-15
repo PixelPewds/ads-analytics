@@ -1,4 +1,3 @@
-```php id="jlwm163"
 <?php
 
 use Illuminate\Database\Migrations\Migration;

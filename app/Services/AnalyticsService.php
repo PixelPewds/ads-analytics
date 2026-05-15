@@ -12,7 +12,6 @@ class AnalyticsService
     public function getKpis(int $reportId, array $filters = []): array
     {
         $query = $this->buildQuery($reportId, $filters);
-    buildQuery($reportId, $filters);
 
         $totals = (clone $query)
             ->selectRaw('
@@ -26,17 +25,17 @@ class AnalyticsService
             ')
             ->first();
 
-        $spend         = (float)$totals->total_spend;
-        $impressions   = (int)$totals->total_impressions;
-        $clicks        = (int)$totals->total_clicks;
-        $conversions   = (float)$totals->total_conversions;
-        $conversations = (float)$totals->total_conversations;
-        $revenue       = (float)$totals->total_revenue;
+        $spend         = (float) ($totals->total_spend ?? 0);
+        $impressions   = (int)   ($totals->total_impressions ?? 0);
+        $clicks        = (int)   ($totals->total_clicks ?? 0);
+        $conversions   = (float) ($totals->total_conversions ?? 0);
+        $conversations = (float) ($totals->total_conversations ?? 0);
+        $revenue       = (float) ($totals->total_revenue ?? 0);
 
         return [
             'total_spend'           => $spend,
             'total_impressions'     => $impressions,
-            'total_reach'           => (int)$totals->total_reach,
+            'total_reach'           => (int) ($totals->total_reach ?? 0),
             'total_clicks'          => $clicks,
             'total_conversions'     => $conversions,
             'total_conversations'   => $conversations,
@@ -74,12 +73,12 @@ class AnalyticsService
 
         foreach ($rows as $row) {
             $labels[]        = Carbon::parse($row->date)->format('M d');
-            $spend[]         = round((float)$row->daily_spend, 2);
-            $conversions[]   = (float)$row->daily_conversions;
-            $conversations[] = (float)$row->daily_conversations;
-            $imp             = (int)$row->daily_impressions;
-            $clk             = (int)$row->daily_clicks;
-            $spd             = (float)$row->daily_spend;
+            $spend[]         = round((float) $row->daily_spend, 2);
+            $conversions[]   = (float) $row->daily_conversions;
+            $conversations[] = (float) $row->daily_conversations;
+            $imp             = (int) $row->daily_impressions;
+            $clk             = (int) $row->daily_clicks;
+            $spd             = (float) $row->daily_spend;
             $ctr[]           = $imp > 0 ? round($clk / $imp * 100, 3) : 0;
             $cpc[]           = $clk > 0 ? round($spd / $clk, 2) : 0;
         }
@@ -121,12 +120,12 @@ class AnalyticsService
             ->get();
 
         return $rows->map(function ($row) {
-            $spend         = (float)$row->total_spend;
-            $impressions   = (int)$row->total_impressions;
-            $clicks        = (int)$row->total_clicks;
-            $conversions   = (float)$row->total_conversions;
-            $conversations = (float)$row->total_conversations;
-            $revenue       = (float)$row->total_revenue;
+            $spend         = (float) $row->total_spend;
+            $impressions   = (int)   $row->total_impressions;
+            $clicks        = (int)   $row->total_clicks;
+            $conversions   = (float) $row->total_conversions;
+            $conversations = (float) $row->total_conversations;
+            $revenue       = (float) $row->total_revenue;
 
             return [
                 'name'                  => $row->entity_name ?? 'Unknown',
@@ -203,22 +202,26 @@ class AnalyticsService
         ];
     }
 
-    private function buildQuery(int $reportId, array $filters): Builder
+    private function buildQuery(int $reportId, array $filters = []): Builder
     {
         $query = Metric::where('report_id', $reportId);
 
         if (!empty($filters['date_start'])) {
-            $query->whereDate('date', '>=', $filters['date_start']);
+            $query->where('date', '>=', $filters['date_start']);
         }
+
         if (!empty($filters['date_end'])) {
-            $query->whereDate('date', '<=', $filters['date_end']);
+            $query->where('date', '<=', $filters['date_end']);
         }
+
         if (!empty($filters['campaign'])) {
             $query->where('campaign_name', $filters['campaign']);
         }
+
         if (!empty($filters['adset'])) {
             $query->where('adset_name', $filters['adset']);
         }
+
         if (!empty($filters['ad'])) {
             $query->where('ad_name', $filters['ad']);
         }
@@ -226,4 +229,3 @@ class AnalyticsService
         return $query;
     }
 }
-
