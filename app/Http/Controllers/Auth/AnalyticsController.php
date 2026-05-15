@@ -1,32 +1,11 @@
 <?php
 
-namespace App\Http\Controllers;
-
-use App\Services\AnalyticsService;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-
-class AnalyticsController extends Controller
-{
-    public function __construct(protected AnalyticsService $analytics) {}
-
-    public function chartData(Request $request): JsonResponse
-    {
-        $request->validate([
-            'report_id'  => ['required', 'integer', 'exists:reports,id'],
-            'date_start' => ['nullable', 'date'],
-            'date_end'   => ['nullable', 'date'],
-            'campaign'   => ['nullable', 'string'],
-            'adset'      => ['nullable', 'string'],
-            'ad'         => ['nullable', 'string'],
-        ]);
-
-        $filters = $request->only(['date_start', 'date_end', 'campaign', 'adset', 'ad']);
-
-        return response()->json([
-            'kpis'      => $this->analytics->getKpis($request->report_id, $filters),
-            'timeline'  => $this->analytics->getTimeline($request->report_id, $filters),
-            'campaigns' => $this->analytics->getCampaignBreakdown($request->report_id, $filters),
-        ]);
-    }
-}
+/**
+ * DEPRECATED — This file is intentionally empty.
+ *
+ * The canonical AnalyticsController lives at:
+ *   app/Http/Controllers/AnalyticsController.php  (namespace App\Http\Controllers)
+ *
+ * This duplicate was causing a namespace collision.
+ * It has been removed to resolve the conflict.
+ */

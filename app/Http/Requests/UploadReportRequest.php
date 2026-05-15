@@ -18,7 +18,7 @@ class UploadReportRequest extends FormRequest
                 'required',
                 'file',
                 'max:20480', // 20 MB
-                'mimes:csv,xlsx,xls',
+                'mimes:csv,xlsx,xls,txt',
             ],
         ];
     }
